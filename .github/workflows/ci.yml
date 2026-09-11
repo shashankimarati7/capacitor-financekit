@@ -1,9 +1,10 @@
 # Halfway FinanceKit plugin: compile on a real Mac, publish to npm on release.
 #
-# - Every upload/change to main: builds the JavaScript and compiles the Swift
-#   for iOS. A red run means the code needs fixing; nothing is published.
-# - Publishing a GitHub Release (for example v0.1.0): runs the same checks,
-#   then publishes to npm using the NPM_TOKEN repository secret.
+# - Every change to main: builds the JavaScript and compiles the Swift for iOS.
+#   Compile errors are listed in the run's Annotations box, so they can be read
+#   from the summary page without opening the log.
+# - Publishing a GitHub Release (for example v0.1.0): same checks, then
+#   publishes to npm using the NPM_TOKEN repository secret.
 name: build-and-publish
 on:
   push:
@@ -16,22 +17,30 @@ jobs:
   ios:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install
       - run: npm run build
       - name: Compile the Swift plugin for iOS
-        run: xcodebuild -scheme MeethalfwayCapacitorFinancekit -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build
+        run: |
+          set -o pipefail
+          if ! xcodebuild -scheme MeethalfwayCapacitorFinancekit -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log; then
+            echo "::group::Compile errors"
+            grep -E "error:" build.log | sort -u | head -40 || true
+            echo "::endgroup::"
+            grep -E "error:" build.log | sort -u | head -20 | sed -E 's#^.*/(ios/Sources/[^:]+):([0-9]+):([0-9]+): error: (.*)$#::error file=\1,line=\2::\1 line \2: \4#; t; s#^(.*error: .*)$#::error::\1#' || true
+            exit 1
+          fi
 
   publish:
     needs: ios
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
