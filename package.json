@@ -19,10 +19,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meethalfway/capacitor-financekit.git"
+    "url": "git+https://github.com/shashankimarati7/capacitor-financekit.git"
   },
   "bugs": {
-    "url": "https://github.com/meethalfway/capacitor-financekit/issues"
+    "url": "https://github.com/shashankimarati7/capacitor-financekit/issues"
   },
   "keywords": [
     "capacitor",
