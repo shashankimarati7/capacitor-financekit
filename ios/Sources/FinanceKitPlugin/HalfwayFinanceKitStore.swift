@@ -108,36 +108,39 @@ import FinanceKit
     @available(iOS 17.4, *)
     public func latestBalances() async throws -> [[String: Any]] {
         guard isAvailable() else { return [] }
-        let query = AccountBalanceQuery(
-            sortDescriptors: [SortDescriptor(\AccountBalance.asOfDate, order: .reverse)],
-            predicate: nil
-        )
+        /*
+         * No sort in the query. The first build (10 Sep 2026) failed with
+         * "value of type 'AccountBalance' has no member 'asOfDate'": the date
+         * lives on each Balance inside currentBalance, not on AccountBalance
+         * (the WWDC24 sample predates that). So fetch, then keep the newest
+         * balance per account here.
+         */
+        let query = AccountBalanceQuery(sortDescriptors: [], predicate: nil)
         let balances = try await FinanceStore.shared.accountBalances(query: query)
 
-        // Newest first, so the first balance seen per account is its latest.
-        var seen = Set<UUID>()
-        var result: [[String: Any]] = []
-        for balance in balances {
-            if seen.contains(balance.accountID) { continue }
-            seen.insert(balance.accountID)
-
+        var newest: [UUID: (balance: Balance, date: Date)] = [:]
+        for accountBalance in balances {
             let chosen: Balance
-            switch balance.currentBalance {
+            switch accountBalance.currentBalance {
             case .available(let value): chosen = value
             case .booked(let value): chosen = value
             case .availableAndBooked(_, let booked): chosen = booked
             @unknown default: continue
             }
-
-            result.append([
-                "accountId": balance.accountID.uuidString,
-                "amount": Self.decimalString(chosen.amount.amount),
-                "currencyCode": chosen.amount.currencyCode,
-                "creditDebitIndicator": String(describing: chosen.creditDebitIndicator),
-                "asOfDate": Self.iso(chosen.asOfDate),
-            ])
+            let accountID = accountBalance.accountID
+            if let existing = newest[accountID], existing.date >= chosen.asOfDate { continue }
+            newest[accountID] = (chosen, chosen.asOfDate)
         }
-        return result
+
+        return newest.map { accountID, entry in
+            [
+                "accountId": accountID.uuidString,
+                "amount": Self.decimalString(entry.balance.amount.amount),
+                "currencyCode": entry.balance.amount.currencyCode,
+                "creditDebitIndicator": String(describing: entry.balance.creditDebitIndicator),
+                "asOfDate": Self.iso(entry.date),
+            ]
+        }
     }
 
     @available(iOS 17.4, *)
