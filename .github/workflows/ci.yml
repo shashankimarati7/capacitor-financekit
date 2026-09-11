@@ -1,0 +1,42 @@
+# Halfway FinanceKit plugin: compile on a real Mac, publish to npm on release.
+#
+# - Every upload/change to main: builds the JavaScript and compiles the Swift
+#   for iOS. A red run means the code needs fixing; nothing is published.
+# - Publishing a GitHub Release (for example v0.1.0): runs the same checks,
+#   then publishes to npm using the NPM_TOKEN repository secret.
+name: build-and-publish
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - name: Compile the Swift plugin for iOS
+        run: xcodebuild -scheme MeethalfwayCapacitorFinancekit -destination generic/platform=iOS CODE_SIGNING_ALLOWED=NO build
+
+  publish:
+    needs: ios
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm install
+      - run: npm run build
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
