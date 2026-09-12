@@ -11,6 +11,8 @@ Pod::Spec.new do |s|
   s.author = package['author']
   s.source = { :git => package['repository']['url'], :tag => s.version.to_s }
   s.source_files = 'ios/Sources/**/*.{swift,h,m,c,cc,mm,cpp}'
+  # Apple requires the privacy manifest to ship inside the built SDK.
+  s.resource_bundles = { 'MeethalfwayCapacitorFinancekit_Privacy' => ['ios/Sources/FinanceKitPlugin/PrivacyInfo.xcprivacy'] }
   s.ios.deployment_target = '15.0'
   s.weak_frameworks = 'FinanceKit'
   s.dependency 'Capacitor'
