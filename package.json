@@ -1,6 +1,6 @@
 {
   "name": "@meethalfway/capacitor-financekit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Apple FinanceKit (Apple Card, Apple Cash, Savings) for Capacitor, used by Halfway",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
