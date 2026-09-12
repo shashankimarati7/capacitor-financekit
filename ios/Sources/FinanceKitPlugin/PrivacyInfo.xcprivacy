@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest for @meethalfway/capacitor-financekit.
+
+  This plugin reads Apple Card, Apple Cash and Savings data through Apple's
+  FinanceKit, only after the person grants access on Apple's own permission
+  screen, and hands it to the host app. It does NOT collect, store or transmit
+  anything itself, does no tracking, contacts no network domains, and uses no
+  required-reason APIs.
+
+  NSPrivacyCollectedDataTypes is empty on purpose: Apple asks each SDK to
+  declare what IT collects. The host app (Halfway) declares the financial data
+  in its own App Privacy details, because it is the app that stores and uses it.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>
