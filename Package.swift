@@ -19,7 +19,10 @@ let package = Package(
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm")
             ],
-            path: "ios/Sources/FinanceKitPlugin"),
+            path: "ios/Sources/FinanceKitPlugin",
+            // Apple requires a privacy manifest inside the bundled SDK, and it
+            // must be copied into the build, not just present in the repo.
+            resources: [.copy("PrivacyInfo.xcprivacy")]),
         .testTarget(
             name: "FinanceKitPluginTests",
             dependencies: ["FinanceKitPlugin"],
